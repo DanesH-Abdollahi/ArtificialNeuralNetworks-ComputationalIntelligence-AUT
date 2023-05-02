@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import shuffle
 
+
 class Model:
     def __init__(self, arch, criterion, optimizer, name=None):
         """
@@ -26,8 +27,9 @@ class Model:
             self.optimizer = optimizer
             self.layers_names = list(arch.keys())
         else:
-            self.model, self.criterion, self.optimizer, self.layers_names = self.load_model(name)
-    
+            self.model, self.criterion, self.optimizer, self.layers_names = self.load_model(
+                name)
+
     def is_layer(self, layer):
         """
         Check if the layer is a layer.
@@ -37,7 +39,8 @@ class Model:
             True if the layer is a layer, False otherwise
         """
         # TODO: Implement check if the layer is a layer
-        return None
+        # Done
+        return True if isinstance(layer, (Conv2D, MaxPool2D, FC)) else False
 
     def is_activation(self, layer):
         """
@@ -48,8 +51,9 @@ class Model:
             True if the layer is an activation function, False otherwise
         """
         # TODO: Implement check if the layer is an activation
-        return None
-    
+        # Done
+        return True if isinstance(layer, Activation) else False
+
     def forward(self, x):
         """
         Forward pass through the model.
@@ -68,7 +72,7 @@ class Model:
             A = None
             tmp.append(None)    # hint add a copy of A to tmp
         return tmp
-    
+
     def backward(self, dAL, tmp, x):
         """
         Backward pass through the model.
@@ -103,7 +107,7 @@ class Model:
         for None:
             if None:    # hint check if the layer is a layer and also is not a maxpooling layer
                 self.model[None].update(None)
-    
+
     def one_epoch(self, x, y):
         """
         One epoch of training.
@@ -122,7 +126,7 @@ class Model:
         grads = None
         self.update(None)
         return loss
-    
+
     def save(self, name):
         """
         Save the model.
@@ -130,8 +134,9 @@ class Model:
             name: name of the model
         """
         with open(name, 'wb') as f:
-            pickle.dump((self.model, self.criterion, self.optimizer, self.layers_names), f)
-        
+            pickle.dump((self.model, self.criterion,
+                        self.optimizer, self.layers_names), f)
+
     def load_model(self, name):
         """
         Load the model.
@@ -142,7 +147,7 @@ class Model:
         """
         with open(name, 'rb') as f:
             return pickle.load(f)
-        
+
     def shuffle(self, m, shuffling):
         order = list(range(m))
         if shuffling:
@@ -231,7 +236,7 @@ class Model:
         if save_after is not None:
             self.save(save_after)
         return train_cost, val_cost
-    
+
     def predict(self, X):
         """
         Predict the output of the model.
