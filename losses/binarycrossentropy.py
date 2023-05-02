@@ -31,4 +31,4 @@ class BinaryCrossEntropy:
         """
         # hint: use the np.divide function
         # TODO: Implement backward pass for binary cross entropy loss
-        return None
+        return np.squeeze(np.sum((y_hat - y) / (y_hat * (1 - y_hat)), axis=1) / y_hat.shape[1])
