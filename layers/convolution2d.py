@@ -166,10 +166,9 @@ class Conv2D:
                         w_end = w_start + kernel_size_w
                         a_slice = a_prev_pad[h_start:h_end, w_start:w_end, :]
 
-                        da_prev_pad += np.multiply(W[..., c], dZ[..., c])
-                        # use element-wise multiplication of dZ and a_slice
-                        dW[..., c] += np.multiply(dZ[..., c], a_slice)
-                        db[..., c] += dZ[..., c]  # use dZ
+                        da_prev_pad += np.multiply(W[:, :, :, c], dZ[i, h, w, c])
+                        dW[..., c] += np.multiply(a_slice, dZ[i, h, w, c])
+                        db[..., c] += dZ[i, h, w, c] 
             # remove padding (trick: pad:-pad)
             dA_prev[i, :, :, :] = da_prev_pad[padding_h:-
                                               padding_h, padding_w:-padding_w, :]
