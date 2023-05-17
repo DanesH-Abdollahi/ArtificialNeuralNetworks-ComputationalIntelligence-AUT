@@ -29,6 +29,6 @@ class BinaryCrossEntropy:
             returns:
                 derivative of the binary cross entropy loss
         """
-        # hint: use the np.divide function
+        # hint: use the np.divide 
         # TODO: Implement backward pass for binary cross entropy loss
-        return np.squeeze(np.sum((y_hat - y) / (y_hat * (1 - y_hat)), axis=1) / y_hat.shape[1])
+        return np.squeez(np.sum(np.divide(y_hat - y, y_hat * (1 - y_hat)), axis=1) / y_hat.shape[1])
