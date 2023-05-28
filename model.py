@@ -40,7 +40,7 @@ class Model:
         """
         # TODO: Implement check if the layer is a layer
         # Done
-        return True if isinstance(layer, (Conv2D, MaxPool2D, FC)) else False
+        return isinstance(layer, (Conv2D, MaxPool2D, FC))
 
     def is_activation(self, layer):
         """
@@ -52,7 +52,7 @@ class Model:
         """
         # TODO: Implement check if the layer is an activation
         # Done
-        return True if isinstance(layer, Activation) else False
+        return isinstance(layer, Activation)
 
     def forward(self, x):
         """
@@ -66,11 +66,11 @@ class Model:
         A = x
         # TODO: Implement forward pass through the model
         # NOTICE: we have a pattern of layers and activations
-        for l in range(None):
-            Z = None
-            tmp.append(None)    # hint add a copy of Z to tmp
-            A = None
-            tmp.append(None)    # hint add a copy of A to tmp
+        for l in range(len(self.layers_names)):
+            Z = self.model[self.layers_names[l]].forward(A)
+            tmp.append(Z)    # hint add a copy of Z to tmp
+            A = self.model[self.layers_names[l]].activation(Z)
+            tmp.append(A)    # hint add a copy of A to tmp
         return tmp
 
     def backward(self, dAL, tmp, x):
@@ -88,14 +88,14 @@ class Model:
         # TODO: Implement backward pass through the model
         # NOTICE: we have a pattern of layers and activations
         # for from the end to the beginning of the tmp list
-        for l in range(None):
+        for l in range(len(self.layers_names), 0, -1):
             if l > 2:
                 Z, A = tmp[l - 1], tmp[l - 2]
             else:
                 Z, A = tmp[l - 1], x
-            dZ = None
-            dA, grad = None
-            grads[self.layers_names[l - 1]] = None
+            dZ = self.model[self.layers_names[l - 1]].activation_grad(Z) * dA
+            dA, grad = self.model[self.layers_names[l - 1]].backward(dZ, A)
+            grads[self.layers_names[l - 1]] = grad
         return grads
 
     def update(self, grads):
@@ -104,9 +104,11 @@ class Model:
         args:
             grads: gradients of the model
         """
-        for None:
-            if None:    # hint check if the layer is a layer and also is not a maxpooling layer
-                self.model[None].update(None)
+        for l in range(len(self.layers_names)):
+            # hint check if the layer is a layer and also is not a maxpooling layer
+            if self.is_layer(self.model[self.layers_names[l]]) and not isinstance(self.model[self.layers_names[l]], MaxPool2D):
+                self.model[self.layers_names[l]].update_parameters(self.optimizer,
+                                                                    grads[self.layers_names[l]])
 
     def one_epoch(self, x, y):
         """
@@ -119,12 +121,12 @@ class Model:
             loss
         """
         # TODO: Implement one epoch of training
-        tmp = None
-        AL = tmp[None]
-        loss = None
-        dAL = None
-        grads = None
-        self.update(None)
+        tmp = self.forward(x)
+        AL = tmp[-1]
+        loss = self.criterion.compute(AL, y)
+        dAL = self.criterion.backward(AL, y)
+        grads = self.backward(dAL, tmp, x)
+        self.update(grads)
         return loss
 
     def save(self, name):
@@ -168,17 +170,18 @@ class Model:
             bx, by: batch of data
         """
         # TODO: Implement batch
-        last_index = None   # hint last index of the batch check for the last batch
-        batch = order[None: None]
+        # hint last index of the batch check for the last batch
+        last_index = index * batch_size + batch_size
+        batch = order[index * batch_size: last_index]
         # NOTICE: inputs are 4 dimensional or 2 demensional
-        if None:
-            bx = None
-            by = None
-            return None, None
+        if len(X.shape) == 4:
+            bx = X[batch, :, :, :]
+            by = y[batch, :]
+            return bx, by
         else:
-            bx = None
-            by = None
-            return None, None
+            bx = X[batch, :]
+            by = y[batch, :]
+            return bx, by
 
     def compute_loss(self, X, y, batch_size):
         """
@@ -191,14 +194,14 @@ class Model:
             loss
         """
         # TODO: Implement compute loss
-        m = None
-        order = None
+        m = X.shape[0]
+        order = self.shuffle(m, shuffling=True)
         cost = 0
         for b in range(m // batch_size):
-            bx, by = None
-            tmp = None
-            AL = None
-            cost += None
+            bx, by = self.batch(X, y, batch_size, b, order)
+            tmp = self.forward(bx)
+            AL = tmp[-1]
+            cost += self.criterion.compute(AL, by)
         return cost
 
     def train(self, X, y, epochs, val=None, batch_size=3, shuffling=False, verbose=1, save_after=None):
@@ -218,16 +221,16 @@ class Model:
         train_cost = []
         val_cost = []
         # NOTICE: if your inputs are 4 dimensional m = X.shape[0] else m = X.shape[1]
-        m = None
+        m = X.shape[0] if len(X.shape) == 4 else X.shape[1]
         for e in tqdm(1, epochs + 1):
-            order = self.shuffle(None, None)
+            order = self.shuffle(m, shuffling)
             cost = 0
-            for b in range(None):
-                bx, by = None
-                cost += None
-            train_cost.append(None)
+            for b in range(m // batch_size):
+                bx, by = self.batch(X, y, batch_size, b, order)
+                cost += self.one_epoch(bx, by)
+            train_cost.append(cost)
             if val is not None:
-                val_cost.append(None)
+                val_cost.append(self.compute_loss(val[0], val[1], batch_size))
             if verbose != False:
                 if e % verbose == 0:
                     print("Epoch {}: train cost = {}".format(e, cost))
@@ -246,4 +249,4 @@ class Model:
             predictions
         """
         # TODO: Implement prediction
-        return None
+        return self.forward(X)[-1]
