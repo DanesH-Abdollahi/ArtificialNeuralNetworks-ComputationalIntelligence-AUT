@@ -55,6 +55,7 @@ class FC:
         # TODO: Forward part
         # Done
         W, b = self.parameters
+        print(W.shape, A_prev_tmp.shape, b.shape)
         Z = W @ A_prev_tmp + b
         return Z
 

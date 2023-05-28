@@ -31,4 +31,4 @@ class MeanSquaredError:
         """
         # TODO: Implement backward pass for mean squared error loss
         # Done
-        return np.squeeze(np.sum(2 * (y_pred - y_true), axis=1) / y_pred.shape[1])
+        return (2 * (y_pred - y_true)) / y_pred.shape[1]

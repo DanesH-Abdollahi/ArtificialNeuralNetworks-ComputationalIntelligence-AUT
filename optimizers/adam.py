@@ -1,8 +1,7 @@
 import numpy as np
-from .gradientdescent import GradientDescent
+# from .gradientdescent import GradientDescent
 
 # TODO: Implement Adam optimizer
-
 
 class Adam:
     def __init__(self, layers_list, learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-8):
@@ -15,8 +14,8 @@ class Adam:
         self.S = {}
         for name in layers_list:
             # TODO: Initialize V and S for each layer (v and s are lists of zeros with the same shape as the parameters)
-            v = [np.zeros(p.shape) for p in layers_list[name].parameters]
-            s = [np.zeros(p.shape) for p in layers_list[name].parameters]
+            v = [np.zeros(p.shape) for p in layers_list[name]["layer"].parameters]
+            s = [np.zeros(p.shape) for p in layers_list[name]["layer"].parameters]
             self.V[name] = v
             self.S[name] = s
 

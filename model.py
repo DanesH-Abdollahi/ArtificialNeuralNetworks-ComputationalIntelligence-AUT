@@ -5,7 +5,7 @@ from layers.fullyconnected import FC
 from activations import Activation, get_activation
 
 import pickle
-import tqdm
+from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 from random import shuffle
@@ -67,9 +67,9 @@ class Model:
         # TODO: Implement forward pass through the model
         # NOTICE: we have a pattern of layers and activations
         for l in range(len(self.layers_names)):
-            Z = self.model[self.layers_names[l]].forward(A)
+            Z = self.model[self.layers_names[l]]["layer"].forward(A)
             tmp.append(Z)    # hint add a copy of Z to tmp
-            A = self.model[self.layers_names[l]].activation(Z)
+            A = self.model[self.layers_names[l]]["activation"].forward(Z)
             tmp.append(A)    # hint add a copy of A to tmp
         return tmp
 
@@ -93,8 +93,8 @@ class Model:
                 Z, A = tmp[l - 1], tmp[l - 2]
             else:
                 Z, A = tmp[l - 1], x
-            dZ = self.model[self.layers_names[l - 1]].activation_grad(Z) * dA
-            dA, grad = self.model[self.layers_names[l - 1]].backward(dZ, A)
+            dZ = self.model[self.layers_names[l - 1]]["activation"].backward(dA, Z)
+            dA, grad = self.model[self.layers_names[l - 1]]["layer"].backward(A, dZ)
             grads[self.layers_names[l - 1]] = grad
         return grads
 
@@ -125,6 +125,7 @@ class Model:
         AL = tmp[-1]
         loss = self.criterion.compute(AL, y)
         dAL = self.criterion.backward(AL, y)
+        print("DAL: ", dAL)
         grads = self.backward(dAL, tmp, x)
         self.update(grads)
         return loss
@@ -179,8 +180,8 @@ class Model:
             by = y[batch, :]
             return bx, by
         else:
-            bx = X[batch, :]
-            by = y[batch, :]
+            bx = X[:, batch]
+            by = y[batch]
             return bx, by
 
     def compute_loss(self, X, y, batch_size):
@@ -221,11 +222,14 @@ class Model:
         train_cost = []
         val_cost = []
         # NOTICE: if your inputs are 4 dimensional m = X.shape[0] else m = X.shape[1]
+        print(X.shape)
         m = X.shape[0] if len(X.shape) == 4 else X.shape[1]
-        for e in tqdm(1, epochs + 1):
+        for e in range(1, epochs + 1):
             order = self.shuffle(m, shuffling)
             cost = 0
+            i = 0 
             for b in range(m // batch_size):
+                print(i+1)
                 bx, by = self.batch(X, y, batch_size, b, order)
                 cost += self.one_epoch(bx, by)
             train_cost.append(cost)
@@ -233,9 +237,9 @@ class Model:
                 val_cost.append(self.compute_loss(val[0], val[1], batch_size))
             if verbose != False:
                 if e % verbose == 0:
-                    print("Epoch {}: train cost = {}".format(e, cost))
-                if val is not None:
-                    print("Epoch {}: val cost = {}".format(e, val_cost[-1]))
+                    print(f"Epoch {e: <5}: train cost = {cost : .4f}")
+                    if val is not None:
+                        ("Epoch {}: val cost = {}".format(e, val_cost[-1]))
         if save_after is not None:
             self.save(save_after)
         return train_cost, val_cost
