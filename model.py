@@ -91,14 +91,16 @@ class Model:
         # NOTICE: we have a pattern of layers and activations
         # for from the end to the beginning of the tmp list
         # print(f"len of layers names: {len(self.layers_names)}")
-        for l in range(2* len(self.layers_names), 0, -2):
+        print(f"Input shape is: {x.shape}")
+        for l in range(2* len(self.layers_names), -1, -2):
             if l >= 2:
                 Z, A = tmp[l - 2], tmp[l - 1]
             else:
-                Z, A = x, tmp[l - 1]
-        
+                Z, A = x, x
+
+            # print(f"l: {l}, Z shape: {Z.shape}, A shape: {A.shape}")
             dZ = self.model[self.layers_names[l//2 - 1]]["activation"].backward(dA, Z)
-            dA, grad = self.model[self.layers_names[l//2 - 1]]["layer"].backward(A, dZ)
+            dA, grad = self.model[self.layers_names[l//2 - 1]]["layer"].backward(dZ, A)
             grads[self.layers_names[l//2 - 1]] = grad
 
         # print("grads: ", grads.keys())
@@ -112,13 +114,13 @@ class Model:
         """
         # print("in update")
         # print(len(self.layers_names))
-        for l in range(len(self.layers_names)):
-            print(isinstance(self.model[self.layers_names[l]]["layer"], (Conv2D, FC)))
+        for l in (self.layers_names):
+            print(isinstance(self.model[l]["layer"], FC))
             # hint check if the layer is a layer and also is not a maxpooling layer
-            if isinstance(self.model[self.layers_names[l]]["layer"], (Conv2D, FC)):
+            if isinstance(self.model[l]["layer"], FC):
                 print("Umaadaaam")
-                self.model[self.layers_names[l]]["layer"].update_parameters(self.optimizer,
-                                                                    grads[self.layers_names[l]], epoch)
+                self.model[l]["layer"].update_parameters(self.optimizer,
+                                                                    grads[l], epoch)
 
     def one_epoch(self, x, y, epoch):
         """
