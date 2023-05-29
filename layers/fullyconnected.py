@@ -55,7 +55,7 @@ class FC:
         # TODO: Forward part
         # Done
         W, b = self.parameters
-        print(W.shape, A_prev_tmp.shape, b.shape)
+        # print(W.shape, A_prev_tmp.shape, b.shape)
         Z = W @ A_prev_tmp + b
         return Z
 
@@ -87,11 +87,11 @@ class FC:
 
         return dA_prev, grads
 
-    def update_parameters(self, optimizer, grads):
+    def update_parameters(self, optimizer, grads, epoch):
         """
         Update the parameters of the layer.
             args:
                 optimizer: optimizer object
                 grads: list of gradients for the weights and bias
         """
-        self.parameters = optimizer.update(grads, self.name)
+        self.parameters = optimizer.update(grads, self.name, epoch)

@@ -1,3 +1,4 @@
+import numpy as np
 # TODO: Implement the gradient descent optimizer
 # Done
 class GD:
@@ -11,7 +12,7 @@ class GD:
         self.learning_rate = learning_rate
         self.layers = layers_list
 
-    def update(self, grads, name):
+    def update(self, grads, name, epoch):
         """
         Update the parameters of the layer.
             args:
@@ -20,11 +21,14 @@ class GD:
             returns:
                 params: list of updated parameters
         """
-        layer = self.layers[name]
+        layer = self.layers[name]["layer"]
         params = []
         # TODO: Implement gradient descent update
         # Done
+        # grads = np.array(grads)
+        # print(grads.shape, layer.parameters.shape)
         for i in range(len(grads)):
+            print(f"Name : {name} Grad : {grads[i].shape}, Param : {layer.parameters[i].shape}")
             params.append(layer.parameters[i] - self.learning_rate * grads[i])
 
         return params

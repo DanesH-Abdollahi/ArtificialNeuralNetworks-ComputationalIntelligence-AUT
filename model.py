@@ -85,32 +85,42 @@ class Model:
         """
         dA = dAL
         grads = {}
+        # print("injaaaaaaaaaaaaaaaaaaaaaaa")
+        # print(tmp)
         # TODO: Implement backward pass through the model
         # NOTICE: we have a pattern of layers and activations
         # for from the end to the beginning of the tmp list
-        for l in range(len(self.layers_names), 0, -1):
-            if l > 2:
-                Z, A = tmp[l - 1], tmp[l - 2]
+        # print(f"len of layers names: {len(self.layers_names)}")
+        for l in range(2* len(self.layers_names), 0, -2):
+            if l >= 2:
+                Z, A = tmp[l - 2], tmp[l - 1]
             else:
-                Z, A = tmp[l - 1], x
-            dZ = self.model[self.layers_names[l - 1]]["activation"].backward(dA, Z)
-            dA, grad = self.model[self.layers_names[l - 1]]["layer"].backward(A, dZ)
-            grads[self.layers_names[l - 1]] = grad
+                Z, A = x, tmp[l - 1]
+        
+            dZ = self.model[self.layers_names[l//2 - 1]]["activation"].backward(dA, Z)
+            dA, grad = self.model[self.layers_names[l//2 - 1]]["layer"].backward(A, dZ)
+            grads[self.layers_names[l//2 - 1]] = grad
+
+        # print("grads: ", grads.keys())
         return grads
 
-    def update(self, grads):
+    def update(self, grads, epoch):
         """
         Update the model.
         args:
             grads: gradients of the model
         """
+        # print("in update")
+        # print(len(self.layers_names))
         for l in range(len(self.layers_names)):
+            print(isinstance(self.model[self.layers_names[l]]["layer"], (Conv2D, FC)))
             # hint check if the layer is a layer and also is not a maxpooling layer
-            if self.is_layer(self.model[self.layers_names[l]]) and not isinstance(self.model[self.layers_names[l]], MaxPool2D):
-                self.model[self.layers_names[l]].update_parameters(self.optimizer,
-                                                                    grads[self.layers_names[l]])
+            if isinstance(self.model[self.layers_names[l]]["layer"], (Conv2D, FC)):
+                print("Umaadaaam")
+                self.model[self.layers_names[l]]["layer"].update_parameters(self.optimizer,
+                                                                    grads[self.layers_names[l]], epoch)
 
-    def one_epoch(self, x, y):
+    def one_epoch(self, x, y, epoch):
         """
         One epoch of training.
         args:
@@ -125,9 +135,9 @@ class Model:
         AL = tmp[-1]
         loss = self.criterion.compute(AL, y)
         dAL = self.criterion.backward(AL, y)
-        print("DAL: ", dAL)
+        # print("DAL: ", dAL)
         grads = self.backward(dAL, tmp, x)
-        self.update(grads)
+        self.update(grads, epoch)
         return loss
 
     def save(self, name):
@@ -222,16 +232,16 @@ class Model:
         train_cost = []
         val_cost = []
         # NOTICE: if your inputs are 4 dimensional m = X.shape[0] else m = X.shape[1]
-        print(X.shape)
+        # print(X.shape)
         m = X.shape[0] if len(X.shape) == 4 else X.shape[1]
         for e in range(1, epochs + 1):
             order = self.shuffle(m, shuffling)
             cost = 0
-            i = 0 
             for b in range(m // batch_size):
-                print(i+1)
+                # print(b)
                 bx, by = self.batch(X, y, batch_size, b, order)
-                cost += self.one_epoch(bx, by)
+                cost += self.one_epoch(bx, by, e)
+                # print(cost)
             train_cost.append(cost)
             if val is not None:
                 val_cost.append(self.compute_loss(val[0], val[1], batch_size))
