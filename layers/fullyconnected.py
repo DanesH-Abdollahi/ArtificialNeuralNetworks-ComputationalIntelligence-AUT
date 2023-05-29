@@ -55,7 +55,6 @@ class FC:
         # TODO: Forward part
         # Done
         W, b = self.parameters
-        # print(W.shape, A_prev_tmp.shape, b.shape)
         Z = W @ A_prev_tmp + b
         return Z
 
@@ -77,7 +76,6 @@ class FC:
         # TODO: backward part
         # Done
         W, b = self.parameters
-        # print("injaaaaa", W.shape, dZ.shape)
         dW = dZ @ A_prev_tmp.T / A_prev_tmp.shape[0]
         db = np.sum(dZ, axis=1, keepdims=True) / A_prev.shape[0]
         dA_prev = W.T @ dZ

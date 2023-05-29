@@ -86,9 +86,6 @@ class ReLU(Activation):
         # TODO: Implement backward pass for ReLU activation function
         # Done
         dZ = np.array(dA, copy=True)
-        # print(dA.shape, Z.shape)
-        # print(dA)
-        # print(Z)
         dZ[Z <= 0] = 0
 
 

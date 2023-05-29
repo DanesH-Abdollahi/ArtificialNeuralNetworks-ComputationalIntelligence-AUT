@@ -25,10 +25,7 @@ class GD:
         params = []
         # TODO: Implement gradient descent update
         # Done
-        # grads = np.array(grads)
-        # print(grads.shape, layer.parameters.shape)
         for i in range(len(grads)):
-            print(f"Name : {name} Grad : {grads[i].shape}, Param : {layer.parameters[i].shape}")
             params.append(layer.parameters[i] - self.learning_rate * grads[i])
 
         return params
